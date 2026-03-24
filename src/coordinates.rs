@@ -1,5 +1,4 @@
-use std::ops::Not;
-use enum_iterator::Sequence;
+use std::cmp::{max, min};
 
 /*
 Implements a hexagonal grid system with direct relationships between the
@@ -8,7 +7,9 @@ Each face is represented in axial coordinates.
 
 Implements the relationships between the faces, edges, and vertices.
 
-Ref: http://www-cs-students.stanford.edu/~amitp/game-programming/grids/
+Refs
+- https://www.redblobgames.com/grids/hexagons/
+- http://www-cs-students.stanford.edu/~amitp/game-programming/grids/
  */
 
 
@@ -19,8 +20,7 @@ Ref: http://www-cs-students.stanford.edu/~amitp/game-programming/grids/
   <     >
    \___/
  */
-
-#[derive(Eq, Hash, PartialEq, Sequence)]
+#[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub enum EdgeRef {
     N,
     W,
@@ -33,17 +33,23 @@ pub enum EdgeRef {
 L <     > R
    \___/
  */
-#[derive(Eq, Hash, PartialEq, Sequence)]
+#[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub enum VertexRef {
     L,
     R
 }
 
 // Axial coordinates of a hexagonal face in the grid
-#[derive(Eq, Hash, PartialEq, Debug)]
+#[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub struct Hex {
     q: i8,
     r: i8,
+}
+
+impl Hex {
+   pub fn new(q: i8, r: i8) -> Hex {
+       Hex{q, r}
+   }
 }
 
 /*
@@ -54,7 +60,7 @@ Axial coordinates of a hexagonal face in the grid + edge ref
   < q,r >
    \___/
  */
-#[derive(Eq, Hash, PartialEq)]
+#[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub struct HexEdge {
     q: i8,
     r: i8,
@@ -68,7 +74,7 @@ Axial coordinates of a hexagonal face in the grid + vertex ref
 L < q,r > R
    \___/
  */
-#[derive(Eq, Hash, PartialEq)]
+#[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub struct HexVertex {
     q: i8,
     r: i8,
@@ -89,11 +95,42 @@ fn neighbors(hex: &Hex) -> Vec<Hex> {
         .collect()
 }
 
-#[test]
-fn test_neighbors() {
-    let f = Hex { q: 0, r: 0 };
-    let neighbors = neighbors(&f);
 
-    assert!(neighbors.contains(&Hex {q: 0, r: 0}).not());
-    assert_eq!(neighbors.len(), 6)
+pub fn from_center(center: &Hex, n: i8) -> Vec<Hex> {
+    (-n..=n)
+        .into_iter()
+        .map(|q| {
+            (max(-n, -q-n)..=min(n, q+n))
+                .into_iter()
+                .map(move |r| Hex::new(center.q + q, center.r + r))
+        })
+        .flatten().collect::<Vec<Hex>>()
+}
+
+#[cfg(test)]
+mod test {
+    use crate::coordinates::{from_center, neighbors, Hex};
+    use std::ops::Not;
+
+    #[test]
+    fn test_neighbors() {
+        let f = Hex { q: 0, r: 0 };
+        let neighbors = neighbors(&f);
+
+        assert!(neighbors.contains(&Hex {q: 0, r: 0}).not());
+        assert_eq!(neighbors.len(), 6)
+    }
+
+    #[test]
+    fn test_from_center() {
+        let coords_1 = from_center(&Hex::new(0, 0), 1);
+
+        assert!(coords_1.contains(&Hex::new(0, 0)));
+        assert_eq!(coords_1.len(), 7);
+
+        let coords_2 = from_center(&Hex::new(0, 0), 2);
+
+        assert!(coords_2.contains(&Hex::new(0, 0)));
+        assert_eq!(coords_2.len(), 19);
+    }
 }
