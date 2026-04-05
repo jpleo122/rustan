@@ -33,17 +33,18 @@ pub enum EdgeRef {
 L <     > R
    \___/
  */
-#[derive(Eq, Hash, PartialEq, Copy, Clone)]
+#[derive(Eq, Hash, PartialEq)]
 pub enum VertexRef {
     L,
     R
 }
 
 // Axial coordinates of a hexagonal face in the grid
-#[derive(Eq, Hash, PartialEq, Copy, Clone)]
+#[derive(Eq, Hash, PartialEq)]
+#[derive(Debug)]
 pub struct Hex {
-    q: i8,
-    r: i8,
+    pub q: i8,
+    pub r: i8,
 }
 
 impl Hex {
@@ -60,7 +61,7 @@ Axial coordinates of a hexagonal face in the grid + edge ref
   < q,r >
    \___/
  */
-#[derive(Eq, Hash, PartialEq, Copy, Clone)]
+#[derive(Eq, Hash, PartialEq)]
 pub struct HexEdge {
     q: i8,
     r: i8,
@@ -74,7 +75,7 @@ Axial coordinates of a hexagonal face in the grid + vertex ref
 L < q,r > R
    \___/
  */
-#[derive(Eq, Hash, PartialEq, Copy, Clone)]
+#[derive(Eq, Hash, PartialEq)]
 pub struct HexVertex {
     q: i8,
     r: i8,

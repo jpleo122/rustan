@@ -11,6 +11,10 @@ pub enum Resource {
     ORE
 }
 
+pub enum MapType {
+    BaseMap,
+}
+
 pub struct Port {
     resource: Resource,
     hex_vertex: HexVertex
@@ -31,14 +35,29 @@ pub enum Tile {
 pub struct Map {
     tiles: HashMap<Hex, Tile>,
 }
-//
-// impl Map {
-//
-//     pub fn neighbors(&self, hex: Hex) -> Vec<Hex> {
-//
-//
-//     }
-// }
+
+impl Map {
+    pub fn new(tiles: HashMap<Hex, Tile>) -> Self { Self { tiles } }
+
+    pub fn from_map_type(map_type: MapType) -> Self {
+        match map_type {
+            MapType::BaseMap => {
+                MapTemplate::base_map_template().to_map()
+            }
+        }
+    }
+
+    pub fn find_desert_tile(&self) -> Option<Hex> {
+        for (_, tile) in self.tiles.iter() {
+            if let Tile::LandTile { hex: tile_hex, resource, .. } = tile {
+                if resource.is_none() {
+                    return Some(Hex::new(tile_hex.q, tile_hex.r));
+                }
+            }
+        }
+        None
+    }
+}
 
 pub struct MapTemplate {
     number_distribution: Vec<i8>,
@@ -88,7 +107,7 @@ impl MapTemplate {
 
         for (hex, (number, resource)) in self.land_tile_positions.into_iter()
             .zip(true_numbers.into_iter().zip(true_resources.into_iter())) {
-            let tile = Tile::LandTile { hex, resource, number };
+            let tile = Tile::LandTile { hex: Hex::new(hex.q, hex.r), resource, number };
             tiles.insert(hex, tile);
         }
 
@@ -115,7 +134,9 @@ impl MapTemplate {
 
 #[cfg(test)]
 mod test {
-    use crate::map::MapTemplate;
+    use std::collections::HashMap;
+    use crate::coordinates::Hex;
+    use crate::map::{Map, MapTemplate, Tile};
 
     #[test]
     fn test_base_map() {
@@ -126,5 +147,19 @@ mod test {
         let map = template.to_map();
 
         assert_eq!(map.tiles.len(), tile_count);
+    }
+
+    #[test]
+    fn test_find_desert_tile1() {
+        let map = Map::new(HashMap::new());
+
+        assert_eq!(map.find_desert_tile(), None);
+
+        let map = Map::new(HashMap::from([
+            (Hex::new(0, 1), Tile::LandTile { hex: Hex::new(0, 1), resource: None, number: 0 }),
+            (Hex::new(1, 1), Tile::LandTile { hex: Hex::new(1, 1), resource: None, number: 0 })
+        ]));
+
+        assert_eq!(map.find_desert_tile(), Some(Hex::new(0, 1)));
     }
 }
