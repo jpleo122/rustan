@@ -3,6 +3,7 @@ use std::iter::repeat_with;
 use rand::seq::SliceRandom;
 use crate::coordinates::{from_center, Hex, HexVertex};
 
+#[derive(Eq, Hash, PartialEq)]
 pub enum Resource {
     WOOD,
     BRICK,
@@ -39,7 +40,7 @@ pub struct Map {
 impl Map {
     pub fn new(tiles: HashMap<Hex, Tile>) -> Self { Self { tiles } }
 
-    pub fn from_map_type(map_type: MapType) -> Self {
+    pub fn from_map_type(map_type: &MapType) -> Self {
         match map_type {
             MapType::BaseMap => {
                 MapTemplate::base_map_template().to_map()

@@ -2,9 +2,7 @@ use std::collections::HashMap;
 use crate::coordinates::{Hex, HexEdge, HexVertex};
 use crate::map::Map;
 
-pub struct Player(i8);
-
-pub struct Robber { hex: Hex }
+pub type Player = i8;
 
 pub struct Road {
     player: Player,
@@ -24,7 +22,7 @@ pub enum Building {
 
 pub struct Board {
     map: Map,
-    robber: Robber,
+    robber: Option<Hex>,
     buildings: HashMap<HexVertex, Building>,
     roads: HashMap<HexVertex, Road>
 }
@@ -32,11 +30,7 @@ pub struct Board {
 impl Board {
     pub fn from_map(map: Map) -> Self {
 
-        let robber = match map.find_desert_tile() {
-            Some(hex) => Robber { hex },
-            None => Robber { hex: Hex::new( i8::MAX,  i8::MAX) }
-        };
-
+        let robber = map.find_desert_tile();
         Self { map, robber, buildings: HashMap::new(), roads: HashMap::new() }
     }
 
